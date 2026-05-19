@@ -21,14 +21,15 @@ async function getCharacters(): Promise<AiCharacter[]> {
 export default async function ChatPage({
   searchParams
 }: {
-  searchParams?: { character?: string };
+  searchParams: Promise<{ character?: string }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const characters = await getCharacters();
 
   return (
     <ChatInterface
       characters={characters}
-      initialCharacterId={searchParams?.character ?? characters[0]?.id}
+      initialCharacterId={resolvedSearchParams.character ?? characters[0]?.id}
     />
   );
 }

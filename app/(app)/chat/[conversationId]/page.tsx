@@ -22,8 +22,9 @@ async function getCharacters(): Promise<AiCharacter[]> {
 export default async function ConversationPage({
   params
 }: {
-  params: { conversationId: string };
+  params: Promise<{ conversationId: string }>;
 }) {
+  const { conversationId } = await params;
   const characters = await getCharacters();
 
   if (!isSupabaseConfigured()) {
@@ -40,7 +41,7 @@ export default async function ConversationPage({
   const { data: conversation } = await supabase
     .from("conversations")
     .select("id, title, character_id")
-    .eq("id", params.conversationId)
+    .eq("id", conversationId)
     .eq("user_id", user.id)
     .maybeSingle();
 
