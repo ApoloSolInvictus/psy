@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export function CheckinForm() {
+  const router = useRouter();
   const [mood, setMood] = useState(6);
   const [anxiety, setAnxiety] = useState(4);
   const [sleep, setSleep] = useState(6);
@@ -36,7 +38,15 @@ export function CheckinForm() {
         });
 
         const payload = await response.json();
-        setMessage(response.ok ? "Check-in guardado." : payload.error ?? "No se pudo guardar.");
+        setMessage(
+          response.ok
+            ? "Check-in guardado."
+            : (payload.error ?? "No se pudo guardar.")
+        );
+
+        if (response.ok) {
+          router.refresh();
+        }
       })();
     });
   }
@@ -61,7 +71,9 @@ export function CheckinForm() {
               placeholder="Algo que quieras recordar de hoy..."
             />
           </div>
-          {message ? <p className="rounded-md bg-muted p-3 text-sm">{message}</p> : null}
+          {message ? (
+            <p className="rounded-md bg-muted p-3 text-sm">{message}</p>
+          ) : null}
           <Button type="submit" disabled={isPending}>
             <Save className="h-4 w-4" aria-hidden="true" />
             Guardar
@@ -85,7 +97,9 @@ function RangeField({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label>{label}</Label>
-        <span className="rounded-md bg-muted px-2 py-1 text-sm font-medium">{value}/10</span>
+        <span className="rounded-md bg-muted px-2 py-1 text-sm font-medium">
+          {value}/10
+        </span>
       </div>
       <Input
         type="range"

@@ -126,6 +126,14 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function private.handle_new_user();
 
+insert into public.profiles (user_id, name, plan)
+select
+  id,
+  coalesce(raw_user_meta_data ->> 'name', split_part(email, '@', 1)),
+  'free'
+from auth.users
+on conflict (user_id) do nothing;
+
 alter table public.profiles enable row level security;
 alter table public.ai_characters enable row level security;
 alter table public.conversations enable row level security;
@@ -227,6 +235,24 @@ grant select on table public.subscriptions to authenticated;
 grant all on all tables in schema public to service_role;
 grant usage, select on all sequences in schema public to authenticated, service_role;
 
+do $$
+declare
+  function_identity text;
+begin
+  select p.oid::regprocedure::text
+  into function_identity
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public'
+    and p.proname = 'rls_auto_enable'
+  limit 1;
+
+  if function_identity is not null then
+    execute format('revoke execute on function %s from anon, authenticated, public', function_identity);
+  end if;
+end;
+$$;
+
 insert into public.ai_characters (id, name, description, system_prompt, image_url, active)
 values
   ('11111111-1111-4111-8111-111111111111', 'Sofía', 'Cálida, sabia y maternal; escucha con profundidad.', 'Adopta una presencia cálida, paciente y protectora. Refleja emociones con suavidad, valida sin exagerar y ayuda al usuario a encontrar un pequeño paso de cuidado.', null, true),
@@ -267,9 +293,6 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "avatars_public_read" on storage.objects;
-create policy "avatars_public_read"
-  on storage.objects for select to anon, authenticated
-  using (bucket_id = 'avatars');
 
 drop policy if exists "avatars_owner_insert" on storage.objects;
 create policy "avatars_owner_insert"

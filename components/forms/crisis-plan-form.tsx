@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,12 +18,19 @@ type CrisisPlanFormProps = {
 };
 
 export function CrisisPlanForm({ initialPlan }: CrisisPlanFormProps) {
-  const [warningSigns, setWarningSigns] = useState((initialPlan?.warning_signs ?? []).join("\n"));
-  const [copingSteps, setCopingSteps] = useState((initialPlan?.coping_steps ?? []).join("\n"));
+  const router = useRouter();
+  const [warningSigns, setWarningSigns] = useState(
+    (initialPlan?.warning_signs ?? []).join("\n")
+  );
+  const [copingSteps, setCopingSteps] = useState(
+    (initialPlan?.coping_steps ?? []).join("\n")
+  );
   const [trustedContacts, setTrustedContacts] = useState(
     (initialPlan?.trusted_contacts ?? []).join("\n")
   );
-  const [emergencyNotes, setEmergencyNotes] = useState(initialPlan?.emergency_notes ?? "");
+  const [emergencyNotes, setEmergencyNotes] = useState(
+    initialPlan?.emergency_notes ?? ""
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -44,7 +52,15 @@ export function CrisisPlanForm({ initialPlan }: CrisisPlanFormProps) {
         });
 
         const payload = await response.json();
-        setMessage(response.ok ? "Plan guardado." : payload.error ?? "No se pudo guardar.");
+        setMessage(
+          response.ok
+            ? "Plan guardado."
+            : (payload.error ?? "No se pudo guardar.")
+        );
+
+        if (response.ok) {
+          router.refresh();
+        }
       })();
     });
   }
@@ -80,7 +96,9 @@ export function CrisisPlanForm({ initialPlan }: CrisisPlanFormProps) {
             onChange={setEmergencyNotes}
             placeholder="Información que quieras tener visible en momentos difíciles..."
           />
-          {message ? <p className="rounded-md bg-muted p-3 text-sm">{message}</p> : null}
+          {message ? (
+            <p className="rounded-md bg-muted p-3 text-sm">{message}</p>
+          ) : null}
           <Button type="submit" disabled={isPending}>
             <Save className="h-4 w-4" aria-hidden="true" />
             Guardar plan
@@ -105,7 +123,11 @@ function Field({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
+      <Textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+      />
     </div>
   );
 }

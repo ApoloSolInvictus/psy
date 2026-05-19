@@ -1,4 +1,5 @@
 import { CreditCard, UserRound } from "lucide-react";
+import { ProfileForm } from "@/components/forms/profile-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,11 @@ async function getProfile() {
   if (!user) return null;
 
   const [{ data: profile }, { data: subscription }] = await Promise.all([
-    supabase.from("profiles").select("name, avatar_url, plan").eq("user_id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("name, avatar_url, plan")
+      .eq("user_id", user.id)
+      .maybeSingle(),
     supabase
       .from("subscriptions")
       .select("status, plan, current_period_end")
@@ -49,17 +54,12 @@ export default async function BillingPage() {
               Perfil
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <p>
-              <span className="font-medium">Nombre:</span> {data?.profile?.name ?? "Sin nombre"}
-            </p>
-            <p>
-              <span className="font-medium">Email:</span> {data?.user?.email ?? "Sin configurar"}
-            </p>
-            <p className="text-muted-foreground">
-              TODO producción: edición de perfil, avatar en Supabase Storage y eliminación de
-              cuenta.
-            </p>
+          <CardContent>
+            <ProfileForm
+              initialName={data?.profile?.name}
+              initialAvatarUrl={data?.profile?.avatar_url}
+              email={data?.user?.email}
+            />
           </CardContent>
         </Card>
 
@@ -81,8 +81,8 @@ export default async function BillingPage() {
               PayPal en segunda pasada
             </Button>
             <p className="text-muted-foreground">
-              El MVP deja listos los endpoints de PayPal como stubs para integrar Checkout y
-              Subscriptions después.
+              El MVP deja listos los endpoints de PayPal como stubs para
+              integrar Checkout y Subscriptions después.
             </p>
           </CardContent>
         </Card>

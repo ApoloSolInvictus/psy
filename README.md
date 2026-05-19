@@ -27,6 +27,20 @@ npm run dev
 
 Abre `http://localhost:3000`.
 
+## Variables de entorno en Vercel
+
+Configura estas variables en Project Settings > Environment Variables:
+
+```env
+NEXT_PUBLIC_APP_URL=https://psy.infiniti-ia.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-5.2
+```
+
+`OPENAI_MODEL` no se descarga desde otro lugar: es el nombre del modelo que quieres usar en la API de OpenAI. `NEXT_PUBLIC_APP_URL` es la URL publica de la app desplegada; en produccion de PSY debe apuntar al dominio real.
+
 ## Supabase
 
 1. Crea un proyecto en Supabase.
@@ -40,6 +54,7 @@ https://tu-dominio.vercel.app/auth/confirm
 ```
 
 El SQL incluye RLS y `GRANT` explícitos para proyectos nuevos donde las tablas ya no se exponen automáticamente al Data API.
+También crea perfiles para usuarios ya existentes, inserta personajes/ejercicios iniciales y deja el bucket `avatars` sin política pública amplia sobre `storage.objects`.
 
 ## OpenAI
 
@@ -99,5 +114,6 @@ Segunda pasada:
 - Cifrado adicional para campos sensibles si aplica.
 - Avatar upload UI con Supabase Storage.
 - PayPal real con verificación de webhooks.
+- Activar leaked password protection en Supabase Auth.
 - Observabilidad sin registrar contenido sensible innecesario.
 - Tests unitarios, integración y RLS.
